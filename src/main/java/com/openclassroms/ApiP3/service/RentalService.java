@@ -28,7 +28,11 @@ import com.openclassroms.ApiP3.repository.UserRepository;
 @Service
 public class RentalService {
 
+    @Value("${app.image-dir}")
+    private String imageDir;
 
+    @Value("${app.image-base-url}")
+    private String imageBaseUrl;
 
     private final RentalRepository rentalRepository;
     private final UserRepository userRepository;
@@ -60,6 +64,7 @@ public class RentalService {
     /**
      * Créer une nouvelle location.
      *
+     * @param picture     l'image associée à la location
      * @param name        le nom de la location
      * @param surface     la surface de la location
      * @param price       le prix de la location
@@ -78,20 +83,41 @@ public class RentalService {
             AppUser user = userRepository.findByEmail(username)
                     .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+            // Gérer l'image
+            String imageFileName = saveImageToFileSystem(picture);
+
             // Créer l'objet Rental et l'enregistrer
             Rental rental = new Rental();
             rental.setName(name);
             rental.setSurface(surface);
             rental.setPrice(price);
             rental.setDescription(description);
+            rental.setPicture(imageBaseUrl + imageFileName);
             rental.setOwner(user);
             rental.setCreatedAt(LocalDateTime.now());
             rental.setUpdatedAt(LocalDateTime.now());
 
             rentalRepository.save(rental);
 
+        } catch (IOException e) {
+            throw new IllegalStateException("Error while saving the image", e); // Gestion d'erreur générique
+        }
     }
 
+    private String saveImageToFileSystem(MultipartFile picture) throws IOException {
+        // Créer le répertoire si nécessaire
+        File directory = new File(imageDir);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+
+        // Enregistrer l'image
+        String imageFileName = System.currentTimeMillis() + "_" + picture.getOriginalFilename();
+        Path imagePath = Paths.get(imageDir + imageFileName);
+        Files.copy(picture.getInputStream(), imagePath, StandardCopyOption.REPLACE_EXISTING);
+
+        return imageFileName;
+    }
 
     /**
      * Mettre à jour une location existante.
