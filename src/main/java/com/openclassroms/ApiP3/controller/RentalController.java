@@ -38,28 +38,28 @@ public class RentalController {
     private RentalService rentalService;
 
     @Autowired
-    private RentalMapper rentalMapper;
+    private RentalMapper rentalMapper; // Injection du mapper
 
     @Operation(summary = "Récupérer toutes les locations", description = "Permet de récupérer toutes les locations disponibles dans la base de données.")
     @GetMapping
     public ResponseEntity<Map<String, List<RentalDTO>>> getAllRentals() {
         List<RentalDTO> rentals = rentalService.getAllRentals().stream()
-                .map(rental -> null)
+                .map(rentalMapper::toDto) // Conversion en DTO objet
                 .collect(Collectors.toList());
         Map<String, List<RentalDTO>> response = new HashMap<>();
-        response.put("rentals", null);
+        response.put("rentals", rentals);
         return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Récupérer une location par ID", description = "Retourne les détails d'une location spécifiée par son ID.")
     @GetMapping("/{id}")
     public ResponseEntity<RentalDTO> getRentalById(@PathVariable Integer id) {
-        Rental rental = null;
+        Rental rental = rentalService.findById(id);
         if (rental != null) {
-            RentalDTO rentalDTO = rentalMapper.toDto(null);
+            RentalDTO rentalDTO = rentalMapper.toDto(rental); // Conversion en DTO objet
             return ResponseEntity.ok(rentalDTO);
         }
-        return ResponseEntity.badRequest().build();
+        return ResponseEntity.notFound().build();
     }
 
     @Operation(summary = "Créer une location", description = "Permet de créer une nouvelle location avec une image. L'utilisateur doit être authentifié.")
@@ -71,9 +71,9 @@ public class RentalController {
             @RequestParam("price") BigDecimal price,
             @RequestParam("description") String description) {
 
-        rentalService.handleCreateRental(null, name, surface, price, null);
-        MessageResponseDTO response = new MessageResponseDTO("Rental not created");
-        return ResponseEntity.status(500).body(response);
+        rentalService.handleCreateRental(picture, name, surface, price, description);
+        MessageResponseDTO response = new MessageResponseDTO("Rental created");
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Mettre à jour une location", description = "Permet à l'utilisateur propriétaire de mettre à jour les informations d'une location existante.")
@@ -86,8 +86,8 @@ public class RentalController {
             @RequestParam String description,
             Principal principal) {
 
-        rentalService.updateRentalByOwner(id, name, surface, price, null, null);
-        MessageResponseDTO response = new MessageResponseDTO("Update failed!");
-        return ResponseEntity.status(400).body(response);
+        rentalService.updateRentalByOwner(id, name, surface, price, description, principal.getName());
+        MessageResponseDTO response = new MessageResponseDTO("Rental updated!");
+        return ResponseEntity.ok(response);
     }
 }
