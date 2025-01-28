@@ -44,7 +44,7 @@ public class RentalController {
     @GetMapping
     public ResponseEntity<Map<String, List<RentalDTO>>> getAllRentals() {
         List<RentalDTO> rentals = rentalService.getAllRentals().stream()
-                .map(rentalMapper::toDto) // Conversion en DTO
+                .map(rentalMapper::toDto) // Conversion en DTO objet
                 .collect(Collectors.toList());
         Map<String, List<RentalDTO>> response = new HashMap<>();
         response.put("rentals", rentals);
@@ -56,7 +56,7 @@ public class RentalController {
     public ResponseEntity<RentalDTO> getRentalById(@PathVariable Integer id) {
         Rental rental = rentalService.findById(id);
         if (rental != null) {
-            RentalDTO rentalDTO = rentalMapper.toDto(rental); // Conversion en DTO
+            RentalDTO rentalDTO = rentalMapper.toDto(rental); // Conversion en DTO objet
             return ResponseEntity.ok(rentalDTO);
         }
         return ResponseEntity.notFound().build();
@@ -72,7 +72,7 @@ public class RentalController {
             @RequestParam("description") String description) {
 
         rentalService.handleCreateRental(picture, name, surface, price, description);
-        MessageResponseDTO response = new MessageResponseDTO("Rental created with image!");
+        MessageResponseDTO response = new MessageResponseDTO("Rental created");
         return ResponseEntity.ok(response);
     }
 
