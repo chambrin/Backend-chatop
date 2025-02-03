@@ -21,7 +21,7 @@ public class ImageService {
 
   /**
    * Récupère une ressource image à partir de son nom de fichier.
-   * 
+   *
    * @param filename nom du fichier
    * @return la ressource correspondante ou une exception
    * @throws ImageNotFoundException si le fichier n'est pas trouvé
@@ -39,7 +39,7 @@ public class ImageService {
 
   /**
    * Détermine le type de contenu d'un fichier.
-   * 
+   *
    * @param file le fichier
    * @return le type MIME du fichier
    * @throws InvalidImageFormatException si le type MIME ne peut être déterminé
@@ -49,12 +49,12 @@ public class ImageService {
       String mimeType = Files.probeContentType(file.toPath());
       if (mimeType == null) {
         throw new InvalidImageFormatException(
-            "Impossible de déterminer le type MIME pour le fichier : " + file.getName());
+                "Impossible de déterminer le type MIME pour le fichier : " + file.getName());
       }
       return MediaType.parseMediaType(mimeType);
     } catch (IOException ex) {
       throw new InvalidImageFormatException(
-          "Erreur lors de la lecture du type MIME pour le fichier : " + file.getName());
+              "Erreur lors de la lecture du type MIME pour le fichier : " + file.getName());
     }
   }
 }
